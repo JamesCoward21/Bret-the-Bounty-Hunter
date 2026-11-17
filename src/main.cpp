@@ -1,15 +1,24 @@
-#include <iostream>
-
-// My C++ game development project
+#include "raylib.h"
 
 int main() {
+  // Create Game Window
+  InitWindow(1000, 800, "2D Platformer");
 
-  int health = 100;
-  int damage = 25;
+  // Set FPS
+  SetTargetFPS(60);
 
-  health -= damage;
+  // Main Game Loop
+  while (!WindowShouldClose()) {
+    BeginDrawing();
 
-  std::cout << "Remaining health: " << health << '\n';
+    ClearBackground(RAYWHITE);
+
+    DrawRectangle(100, 400, 50, 50, BLUE);
+
+    EndDrawing();
+  }
+
+  CloseWindow();
 
   return 0;
 }
