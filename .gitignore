@@ -1,0 +1,11 @@
+# Compiled executables
+main
+
+# Debugging symbols
+*.dSYM/
+
+# Object files
+*.o
+
+# Other build outputs
+build/

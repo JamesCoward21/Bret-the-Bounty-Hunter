@@ -1,0 +1,7 @@
+CompileFlags:
+  Add: [-Wall, -Wextra, -Wpedantic, -Warray-bounds]
+
+Diagnostics:
+  ClangTidy:
+    Add: [bugprone-*, clang-analyzer-*, performance-*, readability-*]
+
