@@ -1,5 +1,7 @@
 #include <iostream>
 
+// My C++ game development project
+
 int main() {
 
   int health = 100;
