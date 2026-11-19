@@ -19,8 +19,10 @@ int main(void) {
   const int screenWidth = 800;
   const int screenHeight = 500;
 
-  std::vector<Rectangle> platforms;
-  platforms.push_back({0, 400, 600, 400});
+  std::vector<Rectangle> platforms{
+      {0, 400, 600, 400},
+      {200, 250, 200, 30},
+  };
 
   InitWindow(screenWidth, screenHeight, "Bret The Bounty Hunter");
 
@@ -32,7 +34,7 @@ int main(void) {
   player.spawnPoint = {100, 350};
 
   const float speed = 250.0f;
-  const float jump = -500.0f;
+  const float jump = -600.0f;
   const float gravity = 1000.0f;
 
   SetTargetFPS(60); // Set game to run at 60 FPS
@@ -52,17 +54,54 @@ int main(void) {
     // Player Movement
 
     float deltaTime = GetFrameTime(); // temporary variables outside struct
-    float previousBottomOfPlayer = player.position.y + player.size.y;
+    float previousRightSideOfPlayer = player.position.x + player.size.x;
+    float previousLeftSideOfPlayer = player.position.x;
 
     if (IsKeyDown(KEY_RIGHT))
       player.position.x = player.position.x + deltaTime * speed;
     if (IsKeyDown(KEY_LEFT))
       player.position.x = player.position.x + deltaTime * -speed;
 
+    player.collider.x = player.position.x;
+    player.collider.y = player.position.y;
+    player.collider.width = player.size.x;
+    player.collider.height = player.size.y;
+
     // Bottom Edge of player for detection with platform
-    if (player.position.x <= 0) {
+    if (player.position.x <= 0) { // sets left boundary
       player.position.x = 0;
     }
+
+    player.isGrounded = false;
+
+    float currentRightSideOfPlayer = player.position.x + player.size.x;
+    float currentLeftSideOfPlayer = player.position.x;
+
+    for (Rectangle platform : platforms) {
+      if (CheckCollisionRecs(player.collider, platform)) {
+        if (previousRightSideOfPlayer <= platform.x &&
+            currentRightSideOfPlayer >= platform.x &&
+            player.position.y + player.size.y >= platform.y &&
+            player.position.y <= platform.y + platform.height &&
+            player.position.x >= 0) {
+
+          player.position.x = platform.x - player.size.x;
+        }
+      }
+      if (CheckCollisionRecs(player.collider, platform)) {
+        if (previousLeftSideOfPlayer >= platform.x + platform.width &&
+            currentLeftSideOfPlayer <= platform.x + platform.width &&
+            player.position.y + player.size.y >= platform.y &&
+            player.position.y <= platform.y + platform.height &&
+            player.position.x >= 0) {
+
+          player.position.x = platform.x + platform.width;
+        }
+      }
+    }
+
+    float previousBottomOfPlayer = player.position.y + player.size.y;
+    float previousTopOfPlayer = player.position.y;
 
     // Gravity
     player.velocity.y =
@@ -70,9 +109,9 @@ int main(void) {
         (deltaTime * gravity); // sets constant downward Velocity.
 
     player.position.y = player.position.y + (player.velocity.y * deltaTime);
-    player.isGrounded = false;
 
     float currentBottomOfPlayer = player.position.y + player.size.y;
+    float currentTopOfPlayer = player.position.y;
 
     player.collider.x = player.position.x;
     player.collider.y = player.position.y;
@@ -82,10 +121,25 @@ int main(void) {
     for (Rectangle platform : platforms) {
       if (CheckCollisionRecs(player.collider, platform)) {
         if (previousBottomOfPlayer <= platform.y &&
-            currentBottomOfPlayer >= platform.y && player.velocity.y >= 0) {
+            currentBottomOfPlayer >= platform.y &&
+            player.position.x + player.size.x >= platform.x &&
+            player.position.x <= platform.x + platform.width &&
+            player.velocity.y >= 0) {
           player.velocity.y = 0;
           player.position.y = platform.y - player.size.y;
           player.isGrounded = true;
+        }
+      }
+      if (CheckCollisionRecs(player.collider, platform)) {
+        if (previousTopOfPlayer >= platform.y + platform.height &&
+            currentTopOfPlayer <= platform.y + platform.height &&
+            player.position.x + player.size.x >= platform.x &&
+            player.position.x <= platform.x + platform.width &&
+            player.velocity.y <= 0) {
+
+          player.velocity.y = 0;
+          player.position.y = platform.y + platform.height;
+          player.isGrounded = false;
         }
       }
     }
