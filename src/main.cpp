@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include <vector>
 
+// Struct containing player variables
 struct Player {
   Vector2 position;
   Vector2 velocity;
@@ -11,17 +12,16 @@ struct Player {
 };
 
 // Program main entry point
-
 int main(void) {
 
-  // Initialization
-
+  // Initialization of game and player variables
   const int screenWidth = 800;
   const int screenHeight = 500;
 
   std::vector<Rectangle> platforms{
-      {0, 400, 600, 400},
-      {200, 250, 200, 30},
+      {0, 400, 600, 1000},
+      {900, 400, 300, 1000},
+      {1400, 250, 200, 1100},
   };
 
   InitWindow(screenWidth, screenHeight, "Bret The Bounty Hunter");
@@ -33,20 +33,20 @@ int main(void) {
   player.isGrounded = false; // is false until player touches platform
   player.spawnPoint = {100, 350};
 
-  const float speed = 250.0f;
+  const float speed = 300.0f;
   const float jump = -600.0f;
   const float gravity = 1000.0f;
 
   SetTargetFPS(60); // Set game to run at 60 FPS
 
-  // Camera
-
-  // Camera2D camera = { 0 };
-  // camera.target = (Vector2){ PlayerPosition.x + 20.0f, PlayerPosition.y
-  // + 20.0f }; camera.offset = (Vector2){}
+  // Camera Initialization
+  Camera2D camera = {0};
+  camera.target = (Vector2){400, player.position.y + 25};
+  camera.offset = (Vector2){400, 250};
+  camera.rotation = 0;
+  camera.zoom = 1;
 
   // Main Game Loop
-
   while (!WindowShouldClose()) // Detect Window close button or ESC key
   {
     // Insert varibles here
@@ -62,21 +62,23 @@ int main(void) {
     if (IsKeyDown(KEY_LEFT))
       player.position.x = player.position.x + deltaTime * -speed;
 
-    player.collider.x = player.position.x;
-    player.collider.y = player.position.y;
-    player.collider.width = player.size.x;
-    player.collider.height = player.size.y;
-
     // Bottom Edge of player for detection with platform
     if (player.position.x <= 0) { // sets left boundary
       player.position.x = 0;
     }
 
-    player.isGrounded = false;
+    // player collision detection
+    player.collider.x = player.position.x;
+    player.collider.y = player.position.y;
+    player.collider.width = player.size.x;
+    player.collider.height = player.size.y;
+
+    player.isGrounded = false; // player only grounded on platform
 
     float currentRightSideOfPlayer = player.position.x + player.size.x;
     float currentLeftSideOfPlayer = player.position.x;
 
+    // Conditions for not passing through sides of platform
     for (Rectangle platform : platforms) {
       if (CheckCollisionRecs(player.collider, platform)) {
         if (previousRightSideOfPlayer <= platform.x &&
@@ -118,6 +120,7 @@ int main(void) {
     player.collider.width = player.size.x;
     player.collider.height = player.size.y;
 
+    // Conditions for not passing through top and bottom of platform
     for (Rectangle platform : platforms) {
       if (CheckCollisionRecs(player.collider, platform)) {
         if (previousBottomOfPlayer <= platform.y &&
@@ -144,18 +147,26 @@ int main(void) {
       }
     }
 
+    // Jumping
     if (IsKeyPressed(KEY_SPACE) && player.isGrounded) {
       player.velocity.y = jump;
       player.isGrounded = false;
     }
 
+    // Respawn Condition
     if (player.position.y + player.size.y > 1000) {
       player.position = player.spawnPoint;
       player.velocity.y = 0;
     }
-    // Camera target follows player
+    // Camera target follows player. updated camera to work inside game loop
+    camera.target = (Vector2){400, player.position.y + 25};
+    camera.offset = (Vector2){400, 250};
+    camera.rotation = 0;
+    camera.zoom = 1;
 
-    // camera.target = (Vector2)
+    if (player.position.x >= 375) {
+      camera.target.x = player.position.x + 25;
+    }
 
     // Draw
 
@@ -166,6 +177,8 @@ int main(void) {
     ClearBackground(backgroundColor);
 
     DrawText("Planet Flergon", 50, 30, 20, GRAY);
+
+    BeginMode2D(camera);
 
     for (Rectangle platform : platforms) {
       DrawRectangleRec(platform, DARKGRAY);
@@ -178,6 +191,7 @@ int main(void) {
                // the vector Player position for the position on the
                // screen, the characters size also needs to be one
                // argument. the position in as the vector PlayerPosition
+    EndMode2D();
 
     EndDrawing();
   }
