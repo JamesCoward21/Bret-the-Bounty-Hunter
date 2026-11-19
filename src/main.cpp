@@ -7,6 +7,7 @@ struct Player {
   Vector2 size;
   Rectangle collider;
   bool isGrounded;
+  Vector2 spawnPoint;
 };
 
 // Program main entry point
@@ -24,10 +25,11 @@ int main(void) {
   InitWindow(screenWidth, screenHeight, "Bret The Bounty Hunter");
 
   Player player;
-  player.position = {400, 250};
+  player.position = {100, 350};
   player.velocity = {0, 0};
   player.size = {50, 50};
   player.isGrounded = false; // is false until player touches platform
+  player.spawnPoint = {100, 350};
 
   const float speed = 250.0f;
   const float jump = -500.0f;
@@ -58,6 +60,9 @@ int main(void) {
       player.position.x = player.position.x + deltaTime * -speed;
 
     // Bottom Edge of player for detection with platform
+    if (player.position.x <= 0) {
+      player.position.x = 0;
+    }
 
     // Gravity
     player.velocity.y =
@@ -90,6 +95,10 @@ int main(void) {
       player.isGrounded = false;
     }
 
+    if (player.position.y + player.size.y > 1000) {
+      player.position = player.spawnPoint;
+      player.velocity.y = 0;
+    }
     // Camera target follows player
 
     // camera.target = (Vector2)
@@ -98,9 +107,11 @@ int main(void) {
 
     BeginDrawing();
 
-    ClearBackground(RAYWHITE);
+    Color backgroundColor = {239, 179, 208, 255};
 
-    DrawText("Planet Flergon", 50, 30, 20, LIGHTGRAY);
+    ClearBackground(backgroundColor);
+
+    DrawText("Planet Flergon", 50, 30, 20, GRAY);
 
     for (Rectangle platform : platforms) {
       DrawRectangleRec(platform, DARKGRAY);
