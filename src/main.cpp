@@ -36,6 +36,16 @@ int main(void) {
 
   InitWindow(screenWidth, screenHeight, "Bret The Bounty Hunter");
 
+  Image surfaceTile =
+      LoadImage("assets/textures/Planet_flergon_rock_surface_tile.png");
+  Texture2D surfaceTexture = LoadTextureFromImage(surfaceTile);
+  UnloadImage(surfaceTile);
+
+  Image underneathTile =
+      LoadImage("assets/textures/Planet_flergon_rock_tile.png");
+  Texture2D underneathTexture = LoadTextureFromImage(underneathTile);
+  UnloadImage(underneathTile);
+
   Player player;
   player.position = {100, 350};
   player.velocity = {0, 0};
@@ -198,8 +208,32 @@ int main(void) {
     BeginMode2D(camera);
 
     for (Rectangle platform : platforms) {
-      DrawRectangleRec(platform, DARKGRAY);
+      if (platform.height <= (float)surfaceTexture.height &&
+          platform.width <= (float)surfaceTexture.width) {
+        DrawTexturePro(
+            surfaceTexture,
+            {0, 0, (float)surfaceTexture.width, (float)surfaceTexture.height},
+            {platform.x, platform.y, 64, 64}, {0, 0}, 0, WHITE);
+      }
+
+      else if (platform.width >= (float)surfaceTexture.width) {
+        DrawTexturePro(
+            surfaceTexture,
+            {0, 0, (float)surfaceTexture.width, (float)surfaceTexture.height},
+            {platform.x, platform.y, 64, 64}, {0, 0}, 0, WHITE);
+      }
+
+      if (platform.height >= (float)surfaceTexture.height) {
+        DrawTexturePro(underneathTexture,
+                       {0, 0, (float)underneathTexture.width,
+                        (float)underneathTexture.height},
+                       {platform.x, platform.y + 64, 64, 64}, {0, 0}, 0, WHITE);
+      }
     }
+
+    // for (Rectangle platform : platforms) {
+    // DrawRectangleRec(platform, DARKGRAY);
+    //}
 
     DrawRectangleV(
         player.position, player.size,
@@ -213,6 +247,8 @@ int main(void) {
     EndDrawing();
   }
   // De-Initialization
+  UnloadTexture(underneathTexture);
+  UnloadTexture(surfaceTexture);
 
   CloseWindow();
 
